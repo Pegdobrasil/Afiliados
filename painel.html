@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel do Afiliado</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div class="min-h-screen flex">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
+      <div class="px-6 py-5 flex items-center gap-3 border-b border-slate-800">
+        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-sky-500 flex items-center justify-center text-sm font-bold">
+          AF
+        </div>
+        <div>
+          <p class="text-xs text-slate-400">Painel Afiliados</p>
+          <p class="text-sm font-semibold text-slate-50 truncate" id="nome">Carregando...</p>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
+        <div class="text-[11px] font-semibold text-slate-500 px-3 uppercase tracking-wide mb-1">
+          Navegação
+        </div>
+
+        <button
+          onclick="document.getElementById('sec_status_integracao').scrollIntoView({behavior:'smooth'})"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 text-slate-50 text-sm font-medium">
+          <span>Status de Integração</span>
+        </button>
+
+        <button
+          onclick="document.getElementById('sec_pedidos').scrollIntoView({behavior:'smooth'})"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">
+          <span>Pedidos</span>
+        </button>
+
+        <button
+          onclick="document.getElementById('sec_produtos').scrollIntoView({behavior:'smooth'})"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">
+          <span>Produtos Cadastrados</span>
+        </button>
+
+        <button
+          onclick="document.getElementById('sec_buscar_produto_wrapper').scrollIntoView({behavior:'smooth'})"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">
+          <span>Buscar Produto</span>
+        </button>
+
+        <button
+          onclick="scrollMinhaConta()"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">
+          <span>Meus Dados</span>
+        </button>
+
+        <button
+          onclick="scrollAlterarSenha()"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">
+          <span>Alterar Senha</span>
+        </button>
+      </nav>
+
+      <div class="px-4 py-4 border-t border-slate-800 text-xs">
+        <p class="text-[11px] text-slate-500 mb-1">Login</p>
+        <p class="text-[11px] text-slate-300 truncate" id="email">...</p>
+        <p class="text-[11px] text-slate-500 mt-1">
+          ID interno: <span id="id">...</span>
+        </p>
+
+        <button onclick="sair()"
+          class="mt-4 w-full text-xs font-medium text-red-400 border border-red-500/60 rounded-lg px-3 py-2 hover:bg-red-500/10">
+          Sair do painel
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 min-w-0">
+      <!-- HEADER -->
+      <header class="flex items-center justify-between px-8 py-5 border-b border-slate-800">
+        <div>
+          <h1 class="text-xl font-semibold text-slate-50">Dashboard do Afiliado</h1>
+          <p class="text-xs text-slate-400 mt-1">
+            Acompanhe vendas, produtos integrados e status das suas conexões em um só lugar.
+          </p>
+        </div>
+      </header>
+
+      <div class="px-8 py-6 space-y-6">
+
+        <!-- PARTIÇÃO 1: STATUS DE INTEGRAÇÃO -->
+        <section id="sec_status_integracao" data-particao="status_integracao"
+          class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-50">Status de Integração</h2>
+              <p class="text-[11px] text-slate-500">
+                Visual de saúde das integrações. Aqui você consegue ver rapidamente se está tudo ativo.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-slate-100">Hubai</span>
+                <span id="status_hubai"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-emerald-600/20 text-emerald-300 border border-emerald-600/40">
+                  Ativo
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400">
+                Integração principal para automação de anúncios.
+              </p>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-slate-100">Magazord</span>
+                <span id="status_magazord"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-slate-700 text-slate-200 border border-slate-600">
+                  Em análise
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400">
+                ERP e pedidos centralizados. Campo visual para você controlar.
+              </p>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-slate-100">Outras conexões</span>
+                <span id="status_outros"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-red-600/10 text-red-300 border border-red-600/50">
+                  Não configurado
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400">
+                Espaço para futuras integrações (Shopee, Mercado Livre, etc.).
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+              <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Saldo acumulado</p>
+              <p class="text-3xl font-bold text-emerald-400 mt-1" id="saldo">R$ 0,00</p>
+              <p class="text-[11px] text-slate-500 mt-2">
+                Valor aproximado das vendas aprovadas.
+              </p>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+              <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Pedidos</p>
+              <p class="text-3xl font-bold text-sky-400 mt-1" id="pedidos">0</p>
+              <p class="text-[11px] text-slate-500 mt-2">
+                Total de pedidos vinculados ao seu ID de afiliado.
+              </p>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+              <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Produtos integrados</p>
+              <p class="text-3xl font-bold text-violet-400 mt-1" id="itensIntegrados">0</p>
+              <p class="text-[11px] text-slate-500 mt-2">
+                Quantidade de itens cadastrados na sua conta (campo visual, pode ligar na API depois).
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- PARTIÇÃO 2: PEDIDOS -->
+        <section id="sec_pedidos" data-particao="pedidos"
+          class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-50">Pedidos</h2>
+              <p class="text-[11px] text-slate-500">
+                Listagem básica dos pedidos para consulta. Os dados vêm da API, mas ficam somente em modo leitura.
+              </p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800/60 text-xs">
+            <table class="min-w-full">
+              <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px]">
+                <tr>
+                  <th class="px-3 py-2 text-left">Código</th>
+                  <th class="px-3 py-2 text-left">Valor</th>
+                  <th class="px-3 py-2 text-left">Data criação</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaPedidos" class="bg-slate-950/60 divide-y divide-slate-800">
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- PARTIÇÃO 3: PRODUTOS CADASTRADOS -->
+        <section id="sec_produtos" data-particao="produtos"
+          class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-50">Produtos Cadastrados</h2>
+              <p class="text-[11px] text-slate-500">
+                Espaço para listar os produtos que já estão integrados na conta do afiliado.
+              </p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800/60 text-xs">
+            <table class="min-w-full">
+              <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px]">
+                <tr>
+                  <th class="px-3 py-2 text-left">SKU</th>
+                  <th class="px-3 py-2 text-left">Nome do produto</th>
+                  <th class="px-3 py-2 text-left">Situação</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaProdutos" class="bg-slate-950/60 divide-y divide-slate-800">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="border border-slate-800 rounded-xl p-3 space-y-3 text-xs">
+            <p class="font-semibold text-slate-50 text-sm">Gerar link de afiliado</p>
+            <p class="text-[11px] text-slate-500">
+              Cole a URL de um produto para gerar um link rastreado com seu ID.
+            </p>
+
+            <input
+              type="text"
+              id="urlProduto"
+              placeholder="Cole aqui a URL do produto"
+              class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            />
+
+            <button
+              onclick="gerarLink()"
+              class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white transition">
+              Gerar link
+            </button>
+
+            <div class="text-[11px] text-slate-400">
+              <span class="font-semibold text-slate-300">Link gerado:</span>
+              <span id="linkAfiliado" class="break-all ml-1"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- PARTIÇÃO 4: BUSCAR PRODUTO PARA INTEGRAR (CARREGADA VIA SUB-HTML) -->
+        <div id="sec_buscar_produto_wrapper"></div>
+
+        <!-- PARTIÇÃO 5: MEUS DADOS -->
+        <!-- (restante igual ao arquivo que você já tem, sem mudanças) -->
+
+      </div>
+    </main>
+  </div>
+
+  <script src="painel.js?v=4"></script>
+</body>
+</html>
