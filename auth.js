@@ -1,42 +1,35 @@
 // CONFIG API
 const API_BASE = "https://painel-afiliados-production.up.railway.app/api";
 
-// ==========================
-// Helpers
-// ==========================
+// ========= Helpers =========
 function v(id) {
-  const el = document.getElementById(id);
+  var el = document.getElementById(id);
   return el ? el.value.trim() : "";
 }
 
 function notify(msg) {
-  alert(msg);
+  window.alert(msg);
 }
 
 function onlyDigits(str) {
   return (str || "").replace(/\D/g, "");
 }
 
-// ==========================
-// CEP → ViaCEP
-// ==========================
+// ========= CEP =========
 async function buscarCep() {
-  const cep = onlyDigits(v("cep"));
+  var cep = onlyDigits(v("cep"));
   if (cep.length !== 8) return;
-
   try {
-    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await res.json();
-    if (data.erro) {
+    var res = await fetch("https://viacep.com.br/ws/" + cep + "/json/");
+    var data = await res.json();
+    if (data && data.erro) {
       notify("CEP não encontrado.");
       return;
     }
-
-    const logEl = document.getElementById("logradouro");
-    const bairroEl = document.getElementById("bairro");
-    const cidadeEl = document.getElementById("cidade");
-    const ufEl = document.getElementById("uf");
-
+    var logEl = document.getElementById("logradouro");
+    var bairroEl = document.getElementById("bairro");
+    var cidadeEl = document.getElementById("cidade");
+    var ufEl = document.getElementById("uf");
     if (logEl) logEl.value = data.logradouro || "";
     if (bairroEl) bairroEl.value = data.bairro || "";
     if (cidadeEl) cidadeEl.value = data.localidade || "";
@@ -47,31 +40,28 @@ async function buscarCep() {
   }
 }
 
-// ==========================
-// CADASTRO
-// ==========================
+// ========= Cadastro =========
 async function registrar() {
-  const payload = {
+  var payload = {
     tipo_pessoa: v("tipo_pessoa"),
     cpf_cnpj: onlyDigits(v("cpf_cnpj")),
     nome: v("nome"),
     email: v("email"),
     telefone: v("telefone"),
     cep: onlyDigits(v("cep")),
-    endereco: (() => {
-      const lg = v("logradouro");
-      const cp = v("complemento");
-      return cp ? `${lg} - ${cp}` : lg;
+    endereco: (function () {
+      var lg = v("logradouro");
+      var cp = v("complemento");
+      return cp ? lg + " - " + cp : lg;
     })(),
     numero: v("numero"),
     bairro: v("bairro"),
     cidade: v("cidade"),
     estado: v("uf"),
-    senha: v("senha"),
+    senha: v("senha")
   };
 
-  // Validação simples: nada vazio
-  for (const k in payload) {
+  for (var k in payload) {
     if (!payload[k]) {
       notify("Preencha todos os campos obrigatórios.");
       return;
@@ -79,38 +69,36 @@ async function registrar() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/auth/register`, {
+    var res = await fetch(API_BASE + "/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload)
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      notify(err?.detail || "Não foi possível concluir o cadastro.");
+      var errData = null;
+      try { errData = await res.json(); } catch(e) {}
+      notify((errData && errData.detail) || "Não foi possível concluir o cadastro.");
       return;
     }
 
-    const data = await res.json().catch(() => null);
-notify(
-  (data && data.message) ||
-    "Cadastro realizado. Enviamos um link de ativação para o seu e-mail."
-);
-// Depois de avisar, redireciona para o login
-window.location.href = "index.html";
-
+    var data = null;
+    try { data = await res.json(); } catch(e) {}
+    notify((data && data.message) || "Cadastro realizado. Enviamos um link de ativação para o seu e-mail.");
+    window.location.href = "index.html";
   } catch (err) {
     console.error(err);
     notify("Erro de conexão ao tentar cadastrar.");
   }
 }
 
-// ==========================
-// LOGIN
-// ==========================
-async function login() {
-  const email = v("email");
-  const senha = v("senha");
+// ========= Login =========
+async function loginHandler(evt) {
+  if (evt) evt.preventDefault();
+  console.log("Login clicado");
+
+  var email = v("email");
+  var senha = v("senha");
 
   if (!email || !senha) {
     notify("Informe email e senha.");
@@ -118,36 +106,36 @@ async function login() {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    var res = await fetch(API_BASE + "/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha }),
+      body: JSON.stringify({ email: email, senha: senha })
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      notify(err?.detail || "Não foi possível fazer login.");
+      var errData = null;
+      try { errData = await res.json(); } catch(e) {}
+      notify((errData && errData.detail) || "Não foi possível fazer login.");
       return;
     }
 
-    const data = await res.json().catch(() => null);
+    var data = null;
+    try { data = await res.json(); } catch(e) {}
+    console.log("Resposta login:", data);
+
     if (!data || data.status !== "success") {
       notify("Não foi possível fazer login.");
       return;
     }
 
-    // Salva sessão simples no localStorage
-    localStorage.setItem(
-      "painel_afiliado_session",
-      JSON.stringify({
-        id: data.id,
-        nome: data.nome,
-        email: data.email,
-        token: data.token,
-        logged_at: new Date().toISOString(),
-      })
-    );
-
+    var session = {
+      id: data.id,
+      nome: data.nome,
+      email: data.email,
+      token: data.token,
+      logged_at: new Date().toISOString()
+    };
+    localStorage.setItem("painel_afiliado_session", JSON.stringify(session));
     window.location.href = "painel.html";
   } catch (err) {
     console.error(err);
@@ -155,34 +143,31 @@ async function login() {
   }
 }
 
-// ==========================
-// RECUPERAR CONTA (tela login)
-// ==========================
+// ========= Recuperar conta =========
 async function recuperarConta() {
-  const email = prompt("Informe o email cadastrado:");
+  var email = window.prompt("Informe o email cadastrado:");
   if (!email) return;
 
-  const nova_senha = prompt("Digite a nova senha que deseja usar:");
+  var nova_senha = window.prompt("Digite a nova senha que deseja usar:");
   if (!nova_senha) return;
 
   try {
-    const res = await fetch(`${API_BASE}/auth/recover`, {
+    var res = await fetch(API_BASE + "/auth/recover", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, nova_senha }),
+      body: JSON.stringify({ email: email, nova_senha: nova_senha })
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      notify(err?.detail || "Erro ao recuperar conta.");
+      var errData = null;
+      try { errData = await res.json(); } catch(e) {}
+      notify((errData && errData.detail) || "Erro ao recuperar conta.");
       return;
     }
 
-    const data = await res.json().catch(() => null);
-    notify(
-      (data && data.message) ||
-        "Senha redefinida. Agora faça login com a nova senha."
-    );
+    var data = null;
+    try { data = await res.json(); } catch(e) {}
+    notify((data && data.message) || "Senha redefinida. Agora faça login com a nova senha.");
   } catch (err) {
     console.error(err);
     notify("Erro de conexão ao recuperar conta.");
@@ -192,3 +177,12 @@ async function recuperarConta() {
 function cadastrarPrompt() {
   window.location.href = "cadastro.html";
 }
+
+// ========= Bind no botão =========
+window.addEventListener("DOMContentLoaded", function () {
+  console.log("auth.js carregado");
+  var btn = document.getElementById("btn-login");
+  if (btn) {
+    btn.addEventListener("click", loginHandler);
+  }
+});
