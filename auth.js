@@ -70,7 +70,6 @@ async function registrar() {
     senha: v("senha"),
   };
 
-  // Validação simples: nada vazio
   for (const k in payload) {
     if (!payload[k]) {
       notify("Preencha todos os campos obrigatórios.");
@@ -92,13 +91,11 @@ async function registrar() {
     }
 
     const data = await res.json().catch(() => null);
-notify(
-  (data && data.message) ||
-    "Cadastro realizado. Enviamos um link de ativação para o seu e-mail."
-);
-// Depois de avisar, redireciona para o login
-window.location.href = "index.html";
-
+    notify(
+      (data && data.message) ||
+        "Cadastro realizado. Enviamos um link de ativação para o seu e-mail."
+    );
+    window.location.href = "index.html";
   } catch (err) {
     console.error(err);
     notify("Erro de conexão ao tentar cadastrar.");
@@ -136,7 +133,6 @@ async function login() {
       return;
     }
 
-    // Salva sessão simples no localStorage
     localStorage.setItem(
       "painel_afiliado_session",
       JSON.stringify({
@@ -192,3 +188,29 @@ async function recuperarConta() {
 function cadastrarPrompt() {
   window.location.href = "cadastro.html";
 }
+
+// ==========================
+// LIGA BOTÃO E ENTER AO LOGIN
+// ==========================
+document.addEventListener("DOMContentLoaded", () => {
+  const btnLogin = document.getElementById("btn-login");
+  if (btnLogin) {
+    btnLogin.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      login();
+    });
+  }
+
+  const emailInput = document.getElementById("email");
+  const senhaInput = document.getElementById("senha");
+
+  function handleKey(ev) {
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      login();
+    }
+  }
+
+  if (emailInput) emailInput.addEventListener("keyup", handleKey);
+  if (senhaInput) senhaInput.addEventListener("keyup", handleKey);
+});
