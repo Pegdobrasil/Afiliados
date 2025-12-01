@@ -18,22 +18,14 @@ function onlyDigits(str) {
 }
 
 // ==========================
-// CEP
+// CEP → ViaCEP
 // ==========================
 async function buscarCep() {
   const cep = onlyDigits(v("cep"));
-  if (cep.length !== 8) {
-    notify("CEP inválido. Informe 8 dígitos.");
-    return;
-  }
+  if (cep.length !== 8) return;
 
   try {
     const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    if (!res.ok) {
-      notify("Não foi possível consultar o CEP.");
-      return;
-    }
-
     const data = await res.json();
     if (data.erro) {
       notify("CEP não encontrado.");
@@ -66,10 +58,10 @@ async function registrar() {
     email: v("email"),
     telefone: v("telefone"),
     cep: onlyDigits(v("cep")),
-    endereco: (function () {
-      const log = v("logradouro");
-      const comp = v("complemento");
-      return comp ? `${log} - ${comp}` : log;
+    endereco: (() => {
+      const lg = v("logradouro");
+      const cp = v("complemento");
+      return cp ? `${lg} - ${cp}` : lg;
     })(),
     numero: v("numero"),
     bairro: v("bairro"),
@@ -78,6 +70,7 @@ async function registrar() {
     senha: v("senha"),
   };
 
+  // Validação simples: nada vazio
   for (const k in payload) {
     if (!payload[k]) {
       notify("Preencha todos os campos obrigatórios.");
@@ -99,12 +92,13 @@ async function registrar() {
     }
 
     const data = await res.json().catch(() => null);
-    notify(
-      (data && data.message) ||
-        "Cadastro realizado. Enviamos um link de ativação para o seu e-mail."
-    );
-    // Depois de avisar, redireciona para o login
-    window.location.href = "index.html";
+notify(
+  (data && data.message) ||
+    "Cadastro realizado. Enviamos um link de ativação para o seu e-mail."
+);
+// Depois de avisar, redireciona para o login
+window.location.href = "index.html";
+
   } catch (err) {
     console.error(err);
     notify("Erro de conexão ao tentar cadastrar.");
@@ -142,7 +136,7 @@ async function login() {
       return;
     }
 
-    // Salva sessão no localStorage (chave usada pelo painel.js)
+    // Salva sessão simples no localStorage
     localStorage.setItem(
       "painel_afiliado_session",
       JSON.stringify({
@@ -195,9 +189,6 @@ async function recuperarConta() {
   }
 }
 
-// ==========================
-// Navegação simples
-// ==========================
 function cadastrarPrompt() {
   window.location.href = "cadastro.html";
 }
