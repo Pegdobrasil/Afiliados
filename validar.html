@@ -19,6 +19,8 @@
   <p id="msg">Aguarde um instante.</p>
 
   <script>
+    const API_BASE = "https://painel-afiliados-production.up.railway.app/api";
+    
     (async function () {
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
