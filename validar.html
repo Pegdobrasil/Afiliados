@@ -3,41 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <title>Validação de acesso - Painel Afiliados</title>
-  <script src="auth.js"></script>
+
+  <!-- Opcional: usar mesma fonte do login -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    const API_BASE = "https://painel-afiliados-production.up.railway.app/api";
-    
     body {
-      font-family: Arial, sans-serif;
-      padding: 24px;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #0ea5e9 0, #020617 45%, #020617 100%);
+      color: #e5e7eb;
+    }
+
+    .card {
+      background: rgba(15,23,42,0.97);
+      border-radius: 18px;
+      padding: 24px 22px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+      border: 1px solid rgba(148,163,184,0.35);
       text-align: center;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin: 0 0 8px;
+      color: #f9fafb;
+    }
+
+    p {
+      margin: 6px 0;
+      font-size: 0.9rem;
+      color: #cbd5f5;
+    }
+
+    #msg {
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .status-ok {
+      color: #4ade80;
+    }
+
+    .status-error {
+      color: #f97373;
+    }
+
+    .small {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 12px;
+    }
+
+    a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <h1>Validando seu acesso...</h1>
-  <p id="msg">Aguarde um instante.</p>
+  <div class="card">
+    <h1>Validando seu acesso...</h1>
+    <p id="msg">Aguarde um instante enquanto confirmamos seus dados.</p>
+    <p class="small">Você será redirecionado para a página de login assim que a validação for concluída.</p>
+  </div>
 
   <script>
     const API_BASE = "https://painel-afiliados-production.up.railway.app/api";
-    
+
     (async function () {
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
       const token = params.get("token");
-
       const msgEl = document.getElementById("msg");
 
       if (!id || !token) {
-        msgEl.textContent = "Link inválido. Verifique se o endereço está correto.";
+        msgEl.textContent = "Link inválido. Verifique se o endereço está completo.";
+        msgEl.className = "status-error";
         return;
       }
 
       try {
         const res = await fetch(
-          `${API_BASE}/auth/verify-email?id=${encodeURIComponent(
-            id
-          )}&token=${encodeURIComponent(token)}`
+          `${API_BASE}/auth/verify-email?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`
         );
 
         const data = await res.json().catch(() => null);
@@ -45,21 +104,23 @@
         if (!res.ok) {
           msgEl.textContent =
             (data && data.detail) ||
-            "Não foi possível validar seu acesso. Tente novamente.";
+            "Não foi possível validar seu acesso. Tente novamente mais tarde.";
+          msgEl.className = "status-error";
           return;
         }
 
         msgEl.textContent =
           (data && data.message) ||
           "Conta verificada com sucesso. Você já pode fazer login.";
+        msgEl.className = "status-ok";
 
-        // Opcional: redirecionar para login depois de alguns segundos
         setTimeout(() => {
           window.location.href = "index.html";
         }, 4000);
       } catch (e) {
         console.error(e);
         msgEl.textContent = "Erro de conexão ao validar seu acesso.";
+        msgEl.className = "status-error";
       }
     })();
   </script>
