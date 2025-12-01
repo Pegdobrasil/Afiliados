@@ -2,12 +2,19 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel do Afiliado</title>
+
+  <!-- Tailwind + fonte Inter -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS externo compartilhado -->
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen">
-  <div class="min-h-screen flex">
+  <div class="min-h-screen flex fade-in-up">
 
     <!-- SIDEBAR -->
     <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
@@ -253,8 +260,9 @@
         <!-- PARTIÇÃO 4: BUSCAR PRODUTO PARA INTEGRAR (CARREGADA VIA SUB-HTML) -->
         <div id="sec_buscar_produto_wrapper"></div>
 
-        <!-- PARTIÇÃO 5: MEUS DADOS -->
-        <!-- (restante igual ao arquivo que você já tem, sem mudanças) -->
+        <!-- PARTIÇÃO 5: MEUS DADOS / ALTERAR SENHA / etc.
+             (mantém o restante do seu HTML original aqui)
+        -->
 
       </div>
     </main>
