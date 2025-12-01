@@ -1,35 +1,50 @@
 // CONFIG API
 const API_BASE = "https://painel-afiliados-production.up.railway.app/api";
 
-// ========= Helpers =========
+// ==========================
+// Helpers
+// ==========================
 function v(id) {
-  var el = document.getElementById(id);
+  const el = document.getElementById(id);
   return el ? el.value.trim() : "";
 }
 
 function notify(msg) {
-  window.alert(msg);
+  alert(msg);
 }
 
 function onlyDigits(str) {
   return (str || "").replace(/\D/g, "");
 }
 
-// ========= CEP =========
+// ==========================
+// CEP
+// ==========================
 async function buscarCep() {
-  var cep = onlyDigits(v("cep"));
-  if (cep.length !== 8) return;
+  const cep = onlyDigits(v("cep"));
+  if (cep.length !== 8) {
+    notify("CEP inválido. Informe 8 dígitos.");
+    return;
+  }
+
   try {
-    var res = await fetch("https://viacep.com.br/ws/" + cep + "/json/");
-    var data = await res.json();
-    if (data && data.erro) {
+    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    if (!res.ok) {
+      notify("Não foi possível consultar o CEP.");
+      return;
+    }
+
+    const data = await res.json();
+    if (data.erro) {
       notify("CEP não encontrado.");
       return;
     }
-    var logEl = document.getElementById("logradouro");
-    var bairroEl = document.getElementById("bairro");
-    var cidadeEl = document.getElementById("cidade");
-    var ufEl = document.getElementById("uf");
+
+    const logEl = document.getElementById("logradouro");
+    const bairroEl = document.getElementById("bairro");
+    const cidadeEl = document.getElementById("cidade");
+    const ufEl = document.getElementById("uf");
+
     if (logEl) logEl.value = data.logradouro || "";
     if (bairroEl) bairroEl.value = data.bairro || "";
     if (cidadeEl) cidadeEl.value = data.localidade || "";
@@ -40,9 +55,11 @@ async function buscarCep() {
   }
 }
 
-// ========= Cadastro =========
+// ==========================
+// CADASTRO
+// ==========================
 async function registrar() {
-  var payload = {
+  const payload = {
     tipo_pessoa: v("tipo_pessoa"),
     cpf_cnpj: onlyDigits(v("cpf_cnpj")),
     nome: v("nome"),
@@ -50,18 +67,18 @@ async function registrar() {
     telefone: v("telefone"),
     cep: onlyDigits(v("cep")),
     endereco: (function () {
-      var lg = v("logradouro");
-      var cp = v("complemento");
-      return cp ? lg + " - " + cp : lg;
+      const log = v("logradouro");
+      const comp = v("complemento");
+      return comp ? `${log} - ${comp}` : log;
     })(),
     numero: v("numero"),
     bairro: v("bairro"),
     cidade: v("cidade"),
     estado: v("uf"),
-    senha: v("senha")
+    senha: v("senha"),
   };
 
-  for (var k in payload) {
+  for (const k in payload) {
     if (!payload[k]) {
       notify("Preencha todos os campos obrigatórios.");
       return;
@@ -69,22 +86,24 @@ async function registrar() {
   }
 
   try {
-    var res = await fetch(API_BASE + "/auth/register", {
+    const res = await fetch(`${API_BASE}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-      var errData = null;
-      try { errData = await res.json(); } catch(e) {}
-      notify((errData && errData.detail) || "Não foi possível concluir o cadastro.");
+      const err = await res.json().catch(() => null);
+      notify(err?.detail || "Não foi possível concluir o cadastro.");
       return;
     }
 
-    var data = null;
-    try { data = await res.json(); } catch(e) {}
-    notify((data && data.message) || "Cadastro realizado. Enviamos um link de ativação para o seu e-mail.");
+    const data = await res.json().catch(() => null);
+    notify(
+      (data && data.message) ||
+        "Cadastro realizado. Enviamos um link de ativação para o seu e-mail."
+    );
+    // Depois de avisar, redireciona para o login
     window.location.href = "index.html";
   } catch (err) {
     console.error(err);
@@ -92,13 +111,12 @@ async function registrar() {
   }
 }
 
-// ========= Login =========
-async function loginHandler(evt) {
-  if (evt) evt.preventDefault();
-  console.log("Login clicado");
-
-  var email = v("email");
-  var senha = v("senha");
+// ==========================
+// LOGIN
+// ==========================
+async function login() {
+  const email = v("email");
+  const senha = v("senha");
 
   if (!email || !senha) {
     notify("Informe email e senha.");
@@ -106,36 +124,36 @@ async function loginHandler(evt) {
   }
 
   try {
-    var res = await fetch(API_BASE + "/auth/login", {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email, senha: senha })
+      body: JSON.stringify({ email, senha }),
     });
 
     if (!res.ok) {
-      var errData = null;
-      try { errData = await res.json(); } catch(e) {}
-      notify((errData && errData.detail) || "Não foi possível fazer login.");
+      const err = await res.json().catch(() => null);
+      notify(err?.detail || "Não foi possível fazer login.");
       return;
     }
 
-    var data = null;
-    try { data = await res.json(); } catch(e) {}
-    console.log("Resposta login:", data);
-
+    const data = await res.json().catch(() => null);
     if (!data || data.status !== "success") {
       notify("Não foi possível fazer login.");
       return;
     }
 
-    var session = {
-      id: data.id,
-      nome: data.nome,
-      email: data.email,
-      token: data.token,
-      logged_at: new Date().toISOString()
-    };
-    localStorage.setItem("painel_afiliado_session", JSON.stringify(session));
+    // Salva sessão no localStorage (chave usada pelo painel.js)
+    localStorage.setItem(
+      "painel_afiliado_session",
+      JSON.stringify({
+        id: data.id,
+        nome: data.nome,
+        email: data.email,
+        token: data.token,
+        logged_at: new Date().toISOString(),
+      })
+    );
+
     window.location.href = "painel.html";
   } catch (err) {
     console.error(err);
@@ -143,46 +161,43 @@ async function loginHandler(evt) {
   }
 }
 
-// ========= Recuperar conta =========
+// ==========================
+// RECUPERAR CONTA (tela login)
+// ==========================
 async function recuperarConta() {
-  var email = window.prompt("Informe o email cadastrado:");
+  const email = prompt("Informe o email cadastrado:");
   if (!email) return;
 
-  var nova_senha = window.prompt("Digite a nova senha que deseja usar:");
+  const nova_senha = prompt("Digite a nova senha que deseja usar:");
   if (!nova_senha) return;
 
   try {
-    var res = await fetch(API_BASE + "/auth/recover", {
+    const res = await fetch(`${API_BASE}/auth/recover`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email, nova_senha: nova_senha })
+      body: JSON.stringify({ email, nova_senha }),
     });
 
     if (!res.ok) {
-      var errData = null;
-      try { errData = await res.json(); } catch(e) {}
-      notify((errData && errData.detail) || "Erro ao recuperar conta.");
+      const err = await res.json().catch(() => null);
+      notify(err?.detail || "Erro ao recuperar conta.");
       return;
     }
 
-    var data = null;
-    try { data = await res.json(); } catch(e) {}
-    notify((data && data.message) || "Senha redefinida. Agora faça login com a nova senha.");
+    const data = await res.json().catch(() => null);
+    notify(
+      (data && data.message) ||
+        "Senha redefinida. Agora faça login com a nova senha."
+    );
   } catch (err) {
     console.error(err);
     notify("Erro de conexão ao recuperar conta.");
   }
 }
 
+// ==========================
+// Navegação simples
+// ==========================
 function cadastrarPrompt() {
   window.location.href = "cadastro.html";
 }
-
-// ========= Bind no botão =========
-window.addEventListener("DOMContentLoaded", function () {
-  console.log("auth.js carregado");
-  var btn = document.getElementById("btn-login");
-  if (btn) {
-    btn.addEventListener("click", loginHandler);
-  }
-});
