@@ -135,7 +135,7 @@ async function loginHandler(evt) {
       token: data.token,
       logged_at: new Date().toISOString()
     };
-    localStorage.setItem("painel_afiliado_session", JSON.stringify(session));
+    localStorage.setItem("afiliado_session", JSON.stringify(session));
     window.location.href = "painel.html";
   } catch (err) {
     console.error(err);
